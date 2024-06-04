@@ -3,14 +3,15 @@
 #include <queue>
 #include <fstream>
 #include <iomanip>
+#include <map>
 using namespace std;
 class Student;
 
-vector<Student *> Enrolledstudents; // Global vector to keep track of current students in record
+map<int, Student *> Enrolledstudents;
 
 // forward definitions
 
-class Course; 
+class Course;
 
 class EnrollmentSystem;
 
@@ -79,7 +80,6 @@ public:
     {
         return;
     }
-
 
     Admin(Admin &other)
     {
@@ -180,6 +180,17 @@ public:
         courseName = "";
         courseCredits = 0;
         courseCapacity = 0;
+    }
+
+    Course(string code, string name, int credits, string instruc, string dep, int lvl, int capa)
+    {
+        courseCode = code;
+        courseName = name;
+        courseCredits = credits;
+        instructor = instruc;
+        level = lvl;
+        dept = dep;
+        courseCapacity = capa;
     }
 
     Course(string code, string name, int credits, string instruc)
@@ -302,7 +313,7 @@ public:
             c.redcapacity();
             Course *n = new Course(c);
             enrolledCourses.push_back(&c);
-            cout << "Enrollment successfull in " << c.code() << endl;
+            // cout << "Enrollment successfull in " << c.code() << endl;
         }
         else if (c.getcapacity() <= 0 && c.sizewaitlist() < 4)
         {
@@ -313,7 +324,7 @@ public:
         {
             try
             {
-                throw "The is full and waitlist has no free spots";
+                throw "The Capacity is full and waitlist has no free spots";
                 ;
             }
             catch (string &str)
@@ -381,7 +392,6 @@ public:
         {
             Course *copycourse = new Course(*course);
             this->enrolledCourses.push_back(copycourse);
-            delete copycourse;
         }
     }
 
@@ -394,61 +404,35 @@ class EnrollmentSystem
 {
 private:
     vector<Course> AvailableCourses;
-
     // this serves as an intermediate service between admin, course management, and students. Only admin can modfiy this. Students can access as per their use but no modfifications allowed!!!
 
 public:
     void enrollStudentInCourse(Student &s, Course &c)
     {
         bool flag = true;
-        if (s.testcourse(c))
+        if (Enrolledstudents[s.getid()] && Enrolledstudents[s.getid()]->testcourse(c))
         {
-            for (size_t i = 0; i < Enrolledstudents.size(); i++)
-            {
-                if (s.getid() == Enrolledstudents[i]->getid())
-                {
-                    flag = false;
-                    break;
-                }
-            }
-        }
-        else if (!s.testcourse(c))
-        {
-            for (size_t i = 0; i < Enrolledstudents.size(); i++)
-            {
-                if (s.getid() == Enrolledstudents[i]->getid())
-                {
-                    flag = false;
-                    break;
-                }
-            }
+            flag = false;
         }
         if (flag)
         {
-            Student *g = new Student(s);
-            Enrolledstudents.push_back(g);
+
+            // s.enrollCourse(c);
+            Student *new_student = new Student(s);
+            // new_student->printcourses();
+            new_student->enrollCourse(c);
+            s.enrollCourse(c);
+            Enrolledstudents[s.getid()] = new_student;
         }
     }
-    void displayEnrollmentStatus()
-    {
-        for (size_t i = 0; i < Enrolledstudents.size(); i++)
-        {
-            Enrolledstudents[i]->display();
-            cout << endl;
-        }
-    }
+
     void addFromWaitlist(Course &c)
     {
         for (int i = c.getcapacity(); !c.isempty() || c.getcapacity() > 0; i++)
         {
             int p = c.qpop();
-            for (size_t j = 0; j < Enrolledstudents.size(); j++)
-            {
-                if (Enrolledstudents[j]->getid() == p)
-                {
-                    Enrolledstudents[j]->enrollCourse(c);
-                }
-            }
+            if (Enrolledstudents[p])
+                Enrolledstudents[p]->enrollCourse(c);
         }
     }
 
@@ -462,15 +446,16 @@ public:
         AvailableCourses = a;
     }
 
-    Course searchbycode(string a)
+    Course *searchbycode(string a)
     {
         for (size_t o = 0; o < AvailableCourses.size(); o++)
         {
             if (a == AvailableCourses[o].code())
             {
-                return AvailableCourses[o];
+                return &AvailableCourses[o];
             }
         }
+        return nullptr;
     }
 
     template <typename T>
@@ -513,7 +498,7 @@ public:
         bool a = false;
         for (size_t k = 0; k < AvailableCourses.size(); k++)
         {
-            if (l == AvailableCourses[k].getlvl())
+            if (l >= AvailableCourses[k].getlvl() && AvailableCourses[k].getlvl() < l + 100)
             {
                 cout << "Code: " << AvailableCourses[k].code() << " Name: " << AvailableCourses[k].name() << " Credits: " << AvailableCourses[k].getcredits() << endl;
                 a = true;
@@ -539,7 +524,6 @@ public:
         if (!a)
         {
             AvailableCourses.push_back(c);
-            cout << "Course Added!" << endl;
         }
     }
 
