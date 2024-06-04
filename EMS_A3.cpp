@@ -1,30 +1,80 @@
 #include <iostream>
-#include <vector>
-#include <queue>
-#include <fstream>
-#include <iomanip>
+#include <limits>
+#include <string>
 #include <D:\LUMS\Fall 23-24\CS 200\Assignments\Student Management System\Header.h>
 using namespace std;
 
-
-void saveStateToFile(ofstream &file, Admin &a)
+void saveStateToFile(ofstream &file, map<int, string> students)
 {
     if (file.is_open())
     {
-
-        for (int i = 0; i < Enrolledstudents.size(); i++)
+        for (const auto pair : students)
         {
-            file << Enrolledstudents[i]->getname() << " " << Enrolledstudents[i]->getid();
-            vector<Course *> crs = Enrolledstudents[i]->getcs();
+            file << Enrolledstudents[pair.first]->getname() << " " << Enrolledstudents[pair.first]->getid();
+            vector<Course *> crs = Enrolledstudents[pair.first]->getcs();
             for (int j = 0; j < crs.size(); j++)
             {
-                file<<" " << crs[i]->code() << " " << crs[i]->name() <<" " << crs[i]->getcredits()<<" "<<crs[i]->getinst();
+                file << " " << crs[j]->code() << " " << crs[j]->name() << " " << crs[j]->getcredits() << " " << crs[j]->getinst() << ",";
+                delete crs[j]; // Deleting dynamically allocated Course objects
             }
             file << endl;
+            // After writing the data, delete the student object
+            delete Enrolledstudents[pair.first];
         }
-    } else cout<<"FAILED TO OPEN FILE"<<endl;
+    }
+    else
+        cout << "FAILED TO OPEN FILE" << endl;
 }
-void loadStateFromFile(string &filename, Student &s){};
+void loadStateFromFile(EnrollmentSystem &system)
+{
+    ifstream file("courses.txt");
+
+    if (!file.is_open())
+    {
+        cout << "Error opening courses.txt file!" << endl;
+        return;
+    }
+
+    string line;
+    getline(file, line); // Skip the header line (assuming it exists)
+
+    while (getline(file, line))
+    {
+        // Split the line using commas as delimiters
+        vector<string> tokens;
+        stringstream ss(line);
+        string token;
+
+        while (getline(ss, token, ','))
+        {
+            tokens.push_back(token);
+        }
+
+        // Check if we have enough data points (7 for course object)
+        if (tokens.size() != 7)
+        {
+            continue; // Skip to the next line
+        }
+
+        // Extract course data
+        string code = tokens[0];
+        string name = tokens[1];
+        int credits;
+        stringstream(tokens[2]) >> credits;
+        string ins = tokens[3];
+        string dept = tokens[4];
+        int level;
+        stringstream(tokens[5]) >> level;
+        int capa;
+        stringstream(tokens[6]) >> capa;
+
+        // Create Course object and add it to the system
+        Course c(code, name, credits, ins, dept, level, capa);
+        system.addcoursetoenrollment(c);
+    }
+
+    file.close();
+}
 
 void studentMenu(Student &student, EnrollmentSystem &system)
 {
@@ -41,7 +91,13 @@ void studentMenu(Student &student, EnrollmentSystem &system)
         cout << "6. Search Course by Dept\n";
         cout << "7. Exit\n";
         cout << "Enter your choice: ";
-        cin >> choice;
+        while (!(cin >> choice))
+        {
+            cout << "Invalid input. Please enter a number between 1 and 7: ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear the input buffer
 
         switch (choice)
         {
@@ -49,12 +105,18 @@ void studentMenu(Student &student, EnrollmentSystem &system)
         {
             string code;
             cout << "Enter Course Code: ";
-            cin >> code;
-            Course c;
-            c = system.searchbycode(code);
-            // cout << c.code();
-            student.enrollCourse(c);
-            system.enrollStudentInCourse(student, c);
+            getline(cin, code);
+            Course *c = system.searchbycode(code);
+            if (c)
+            {
+                system.enrollStudentInCourse(student, *c);
+                // student.enrollCourse(*c);
+                cout << "Operation Finished for" << code << endl;
+            }
+            else
+            {
+                cout << "Course Not Found!!!" << endl;
+            }
             break;
         }
 
@@ -62,9 +124,16 @@ void studentMenu(Student &student, EnrollmentSystem &system)
         {
             string code;
             cout << "Enter Course Code: ";
-            cin >> code;
-            // Course c = system.searchbycode(code);
-            // student.dropcourse(c);
+            getline(cin, code);
+            Course *c = system.searchbycode(code);
+            if (c)
+            {
+                student.dropcourse(*c);
+            }
+            else
+            {
+                cout << "Course Not Found!!!" << endl;
+            }
             break;
         }
         case 3:
@@ -76,7 +145,7 @@ void studentMenu(Student &student, EnrollmentSystem &system)
             // Logic for searching course by instructor
             string instructor;
             cout << "Enter instructor's name: ";
-            cin >> instructor;
+            getline(cin, instructor);
             system.searchbyinstructor(instructor);
             break;
         }
@@ -85,7 +154,13 @@ void studentMenu(Student &student, EnrollmentSystem &system)
             // Logic for searching course by level
             int level;
             cout << "Enter level: ";
-            cin >> level;
+            while (!(cin >> level))
+            {
+                cout << "Invalid input. Please enter an integer for level: ";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear the input buffer
             system.seachbylvl(level);
             break;
         }
@@ -94,7 +169,7 @@ void studentMenu(Student &student, EnrollmentSystem &system)
             // Logic for searching course by department
             string dept;
             cout << "Enter department: ";
-            cin >> dept;
+            getline(cin, dept);
             system.searchbydept(dept);
             break;
         }
@@ -102,7 +177,7 @@ void studentMenu(Student &student, EnrollmentSystem &system)
             cout << "Exiting student menu.\n";
             break;
         default:
-            cout << "Invalid choice.\n";
+            cout << "Invalid choice. Please enter a number between 1 and 7.\n";
         }
     } while (choice != 7);
 }
@@ -122,37 +197,58 @@ void adminMenu(Admin &admin, EnrollmentSystem &system)
         cout << "7. Increase Course Capacity\n";
         cout << "8. Exit\n";
         cout << "Enter your choice: ";
-        cin >> choice;
+        while (!(cin >> choice))
+        {
+            cout << "Invalid input. Please enter a number between 1 and 8: ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear the input buffer
 
         switch (choice)
         {
         case 1:
         {
-            cout << "Enter Course details: ";
-            string code, name, ins;
-            int credits;
-            cout << endl
-                 << "Code: ";
-            cin >> code;
-            cout << endl
-                 << "name: ";
-            cin >> name;
-            cout << endl
-                 << "credits: ";
-            cin >> credits;
-            cout << endl
-                 << "Instructor: ";
-            cin >> ins;
-            int level;
-            cout << "level: ";
-            cin >> level;
-            string dept;
+            cout << "Enter Course details: " << endl;
+            string code, name, ins, dept;
+            int credits, level, capa;
+
+            cout << "Code: ";
+            getline(cin, code);
+            cout << "Name: ";
+            getline(cin, name);
+            cout << "Credits: ";
+            while (!(cin >> credits))
+            {
+                cout << "Invalid input. Please enter an integer for credits: ";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear the input buffer
+            cout << "Instructor: ";
+            getline(cin, ins);
+            cout << "Level: ";
+            while (!(cin >> level))
+            {
+                cout << "Invalid input. Please enter an integer for level: ";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear the input buffer
             cout << "Department: ";
-            cin >> dept;
-            Course c(code, name, credits, ins);
-            c.setlvl(level);
-            c.setdept(dept);
+            getline(cin, dept);
+            cout << "Capacity: ";
+            while (!(cin >> capa))
+            {
+                cout << "Invalid input. Please enter an integer for capacity: ";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear the input buffer
+
+            Course c(code, name, credits, ins, dept, level, capa);
             system.addcoursetoenrollment(c);
+            cout << "Course Added!!!" << endl;
             break;
         }
         case 2:
@@ -160,18 +256,22 @@ void adminMenu(Admin &admin, EnrollmentSystem &system)
             cout << "Enter Course details: ";
             string code, name, ins;
             int credits;
-            cout << endl
-                 << "Code: ";
-            cin >> code;
-            cout << endl
-                 << "name: ";
-            cin >> name;
-            cout << endl
-                 << "credits: ";
-            cin >> credits;
-            cout << endl
-                 << "Instructor: ";
-            cin >> ins;
+
+            cout << "Code: ";
+            getline(cin, code);
+            cout << "Name: ";
+            getline(cin, name);
+            cout << "Credits: ";
+            while (!(cin >> credits))
+            {
+                cout << "Invalid input. Please enter an integer for credits: ";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear the input buffer
+            cout << "Instructor: ";
+            getline(cin, ins);
+
             Course c(code, name, credits, ins);
             system.removecoursefromenrollment(c);
             break;
@@ -180,7 +280,7 @@ void adminMenu(Admin &admin, EnrollmentSystem &system)
         {
             string instructor;
             cout << "Enter instructor's name: ";
-            cin >> instructor;
+            getline(cin, instructor);
             system.searchbyinstructor(instructor);
             break;
         }
@@ -188,7 +288,13 @@ void adminMenu(Admin &admin, EnrollmentSystem &system)
         {
             int level;
             cout << "Enter level: ";
-            cin >> level;
+            while (!(cin >> level))
+            {
+                cout << "Invalid input. Please enter an integer for level: ";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear the input buffer
             system.seachbylvl(level);
             break;
         }
@@ -196,7 +302,7 @@ void adminMenu(Admin &admin, EnrollmentSystem &system)
         {
             string dept;
             cout << "Enter department: ";
-            cin >> dept;
+            getline(cin, dept);
             system.searchbydept(dept);
             break;
         }
@@ -204,23 +310,28 @@ void adminMenu(Admin &admin, EnrollmentSystem &system)
         {
             int i;
             cout << "Enter Student ID: ";
-            cin >> i;
+            while (!(cin >> i))
+            {
+                cout << "Invalid input. Please enter an integer for Student ID: ";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear the input buffer
             string n;
-            cout << endl
-                 << "Enter Student Name: ";
-            cin >> n;
+            cout << "Enter Student Name: ";
+            getline(cin, n);
+
             Student s(i, n);
             bool a = false;
-            for (size_t i = 0; i < Enrolledstudents.size(); i++)
+
+            if (Enrolledstudents[s.getid()])
             {
-                if (s.getid() == Enrolledstudents[i]->getid())
-                {
-                    Enrolledstudents.erase(Enrolledstudents.begin() + i);
-                    cout << "Student Expelled!!!" << endl;
-                    a = true;
-                    break;
-                }
+                Enrolledstudents.erase(s.getid());
+                cout << "Student Expelled!!!" << endl;
+                a = true;
+                break;
             }
+
             if (!a)
             {
                 cout << "Student Not Found!!!" << endl;
@@ -231,20 +342,33 @@ void adminMenu(Admin &admin, EnrollmentSystem &system)
         {
             cout << "Enter Course details: ";
             string code, name, ins;
-            int credits;
-            cout << endl
-                 << "Code: ";
-            cin >> code;
-            cout << endl
-                 << "name: ";
-            cin >> name;
-            cout << endl
-                 << "Instructor: ";
-            cin >> ins;
+            int credits, g;
+
+            cout << "Code: ";
+            getline(cin, code);
+            cout << "Name: ";
+            getline(cin, name);
+            cout << "Instructor: ";
+            getline(cin, ins);
+            cout << "Credits: ";
+            while (!(cin >> credits))
+            {
+                cout << "Invalid input. Please enter an integer for credits: ";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear the input buffer
+
             Course c(code, name, credits, ins);
             cout << "Enter New Course Capacity: ";
-            int g;
-            cin >> g;
+            while (!(cin >> g))
+            {
+                cout << "Invalid input. Please enter an integer for the new capacity: ";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear the input buffer
+
             vector<Course> cs = system.availcourses();
             bool o = true;
             for (size_t i = 0; i < cs.size(); i++)
@@ -256,8 +380,10 @@ void adminMenu(Admin &admin, EnrollmentSystem &system)
                     o = false;
                     cout << "Cap Increased!!!" << endl;
                 }
-            } if (o){
-                cout<<"Course not found!"<<endl;
+            }
+            if (o)
+            {
+                cout << "Course not found!" << endl;
             }
 
             break;
@@ -266,17 +392,21 @@ void adminMenu(Admin &admin, EnrollmentSystem &system)
             cout << "Exiting admin menu.\n";
             break;
         default:
-            cout << "Invalid choice.\n";
+            cout << "Invalid choice. Please enter a number between 1 and 8.\n";
         }
     } while (choice != 8);
 }
+
 int main()
 {
     EnrollmentSystem system;
     Admin admin;
-    vector<Student> students; // Vector to store multiple students
+    map<int, string> students; // Vector to store multiple students
     int userChoice;
-
+    for (int i = 0; i < 5000; ++i)
+    {
+        Enrolledstudents[i] = nullptr;
+    }
     ofstream myfile("EMS.txt");
     if (!myfile)
     {
@@ -286,6 +416,7 @@ int main()
 
     do
     {
+        loadStateFromFile(system);
         cout << "Welcome to the Enrollment System\n";
         cout << "1. Admin\n";
         cout << "2. Student\n";
@@ -302,29 +433,29 @@ int main()
             admin.setid(adminID);
             adminMenu(admin, system);
             // Save state to file if admin chooses to do so
-            saveStateToFile(myfile, admin);
             cout << "State saved to file successfully.\n";
             break;
 
         case 2:
-            {
-                Student student;
-                int studentID;
-                string studentName;
+        {
+            Student student;
+            int studentID;
+            string studentName;
 
-                cout << "Enter Student ID: ";
-                cin >> studentID;
-                cout << "Enter Name: ";
-                cin >> studentName;
-                student.setid(studentID);
-                student.setname(studentName);
-                students.push_back(student); 
-                studentMenu(students.back(), system); 
-                break;
-            }
+            cout << "Enter Student ID: ";
+            cin >> studentID;
+            cout << "Enter Name: ";
+            cin >> studentName;
+            student.setid(studentID);
+            student.setname(studentName);
+            studentMenu(student, system);
+            students[studentID] = studentName;
+            break;
+        }
 
         case 3:
             cout << "Exiting the system.\n";
+            saveStateToFile(myfile, students);
             break;
 
         default:
