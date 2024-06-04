@@ -1,42 +1,45 @@
-Enrollment Management System (EMS)
+Student Management System
+Introduction
+The Student Management System is a command-line application implemented in C++. It serves as a tool for managing courses, enrollments, and students within an educational institution. The system is designed to be user-friendly and efficient, providing separate interfaces for administrators and students.
 
-Introduction:
+Features
+Administrators
+Administrators have access to a range of features to manage courses and students effectively.
 
-This C++ program implements an Enrollment Management System (EMS) for a student administration system. It allows users (admins and students) to interact with course enrollment, student management, and data persistence.
+Add Course to Enrollment: Administrators can add new courses to the system's enrollment list. They provide details such as the course code, name, credits, instructor, department, level, and capacity.
 
-Features:
+Remove Course from Enrollment: Courses that are no longer offered or need to be removed can be deleted from the enrollment list.
 
-Admin Functionality:
-Add courses to the enrollment system.
-Remove courses from the enrollment system.
-Search for courses by instructor, level, or department.
-Expel students.
-Increase the capacity of existing courses.
-Student Functionality:
-Enroll in courses.
-Drop courses.
-Generate fee challans (placeholder for future implementation).
-Search for courses by instructor, level, or department.
-Data Persistence:
-Saves enrollment state, including enrolled students and courses, to a file (EMS.txt) upon admin's choice.
-Loads enrollment state from the file (EMS.txt) upon program startup (Note: This functionality is not currently implemented but included for future reference).
+Search Course by Instructor: Administrators can search for courses based on the instructor's name. This feature helps in finding courses taught by specific faculty members.
 
+Search Course by Level: Courses can be searched by their level, allowing administrators to filter courses based on academic difficulty or year.
 
-Usage:
+Search Course by Department: Courses can be filtered by department, enabling administrators to view all courses offered within a specific academic department.
 
-Start the program.
-Choose your role: Admin (1) or Student (2).
-If you choose Admin:
-Enter your Admin ID.
-The Admin Menu will be presented.
-Select the desired action.
-If you choose Student:
-Enter your Student ID and name.
-The Student Menu will be presented.
-Select the desired action.
+Expel Student: Administrators have the authority to expel students from the system. This action removes the student's enrollment records and disassociates them from any courses.
 
-Additional Notes:
+Increase Course Capacity: In case of high demand or special circumstances, administrators can increase the capacity of a course to accommodate more students.
 
-The loadStateFromFile function in main.cpp is currently not implemented.
-Error handling and input validation could be further improved.
-Consider adding comments throughout the code for better readability and maintainability.
+Students
+Students have access to features tailored to their enrollment and course management needs.
+
+Enroll in a Course: Students can enroll in courses by providing the course code. The system checks for available capacity and adds the student to the course if space is available. Otherwise, the student is added to the course's waitlist.
+
+Drop a Course: Students can drop courses they are currently enrolled in. This action removes the student from the course roster and increases the available capacity.
+
+Generate Fee Challan: The system generates a fee challan for the student based on their enrolled courses. The challan includes the total fee amount, calculated based on the credits of each course and any miscellaneous charges.
+
+Search Course by Instructor: Students can search for courses based on the instructor's name. This feature helps students find courses taught by specific instructors they prefer.
+
+Search Course by Level: Students can search for courses based on their academic level. This feature allows students to explore courses suitable for their academic progression.
+
+Search Course by Department: Students can search for courses offered within a specific academic department. This feature helps students find courses related to their field of study.
+
+Usage
+Compile the Code: Use a C++ compiler to compile the source code.
+Run the Executable: Execute the compiled program to launch the Student Management System.
+Navigate the Menus: Follow the on-screen instructions to navigate through the system menus and perform tasks.
+Known Issues
+The feature to reuse the saved state of students to continue the program is still under development.
+Contributing
+Contributions to the project are welcome! Fork the repository, make changes, and submit pull requests.
