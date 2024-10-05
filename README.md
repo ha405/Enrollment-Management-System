@@ -1,5 +1,5 @@
-<<<<<<< HEAD
-Enrollment Management System. Head over to the branch Student-Management-System to have a look. Thanks
+
+Enrollment Management System. Changes are Welcome, have fun bbye. Thanks
 =======
 Student Management System
 Introduction
