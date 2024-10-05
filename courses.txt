@@ -1,0 +1,28 @@
+COMS101,Introduction to Computer Science,3,Smith,CS,1,20
+MATH112,Calculus I,4,Jones,MATH,1,30
+ENGL223,British Literature,3,Johnson,ENGL,2,25
+HIST334,World History,3,Williams,HIST,3,35
+BIOL445,Cell Biology,4,Brown,BIOL,4,20
+PHYS101,Introduction to Physics,4,Garcia,PHYS,1,25
+CHEM222,Organic Chemistry,4,Miller,CHEM,2,15
+ECON333,Microeconomics,3,Davis,ECON,3,30
+PSYC444,Abnormal Psychology,3,Lee,PSYC,4,20
+ART101,Introduction to Drawing,3,Wilson,ART,1,15
+MUSC222,Music Theory I,3,Clark,MUSC,2,10
+THEA333,Acting I,3,Young,THEA,3,20
+PHIL444,Ethics,3,Moore,PHIL,4,25
+CS202,Data Structures and Algorithms,3,Smith,CS,2,20
+MATH213,Calculus II,4,Jones,MATH,2,30
+ENGL324,American Literature,3,Johnson,ENGL,3,25
+HIST435,American History,3,Williams,HIST,4,35
+BIOL546,Molecular Biology,4,Brown,BIOL,5,20
+PHYS202,Electricity and Magnetism,4,Garcia,PHYS,2,25
+CHEM323,Inorganic Chemistry,4,Miller,CHEM,3,15
+ECON434,Macroeconomics,3,Davis,ECON,4,30
+PSYC545,Social Psychology,3,Lee,PSYC,5,20
+ART202,Painting I,3,Wilson,ART,2,15
+MUSC323,Music Theory II,3,Clark,MUSC,3,10
+THEA434,Directing I,3,Young,THEA,4,20
+PHIL545,Logic,3,Moore,PHIL,5,25
+CS303,Operating Systems,3,Smith,CS,3,20
+MATH314,Linear Algebra,3,Jones,MATH,3,30
